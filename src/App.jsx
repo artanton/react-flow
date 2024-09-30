@@ -1,4 +1,4 @@
-import { useCallback} from "react";
+import { useCallback, useState} from "react";
 import {
   ReactFlow,
   addEdge,
@@ -39,29 +39,35 @@ function Flow() {
   // const [deleteNode] = useDeleteNodeMutation();
   // const [deleteEdge] = useDeleteEdgeMutation();
 
-  // const [nodes, setNodes] = useState(initialNodes);
-  // const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes] = useState(nds);
+  const [edges, setEdges] = useState(eds);
+  
 
   const onNodesChange = useCallback(
-    (changes) => {
-      const updateNodes = applyNodeChanges(changes, nds);
-      saveNode(updateNodes);
+   async (changes) => {
+      const updatedNodes = applyNodeChanges(changes, nodes);
+     
+        setNodes(updatedNodes);  
+        await saveNode(updatedNodes);
     },
-    [nds, saveNode]
+    [nodes, saveNode]
   );
   const onEdgesChange = useCallback(
-    (changes) => {
-      const updateEdges = applyEdgeChanges(changes, eds);
-      saveEdge(updateEdges);
+    async (changes) => {
+      const updatedEdges = applyEdgeChanges(changes, edges);
+      
+        setEdges(updatedEdges);
+      await saveEdge(updatedEdges);
     },
-    [eds, saveEdge]
+    [edges, saveEdge]
   );
   const onConnect = useCallback(
-    (connection) => {
-      const  newEdges = addEdge(connection, eds);
+    async (connection) => {
+      const  newEdges = addEdge(connection, edges);
+      setEdges(newEdges);
       saveEdge(newEdges);
     },
-    [saveEdge, eds]
+    [saveEdge, edges]
   );
 
   // const handleAddNodes = () => {
@@ -77,8 +83,8 @@ function Flow() {
     <div style={{ width: "100vw", height: "100vh" }}>
       <button>Add node</button>
       <ReactFlow
-        nodes={nds}
-        edges={eds}
+        nodes={nodes}
+        edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
