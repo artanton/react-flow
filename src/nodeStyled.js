@@ -16,3 +16,9 @@ display: block;
   color: #777;
   font-size: 12px;
 `;
+export const CextUpdaterLabel = styled.label`
+/* position: absolute; */
+display: block;
+  color: #777;
+  font-size: 12px;
+`;
