@@ -94,7 +94,7 @@ function Flow() {
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      {/* <button>Add node</button> */}
+      <button>Add node</button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
