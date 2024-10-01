@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 import { Handle, Position } from '@xyflow/react';
 
 import { TextUpdaterLabel, TextNode } from './nodeStyled';
+import { useUpdateNodesMutation } from './nodesAPI';
 
 const leftStyle = { left: 10 };
 const rightStyle = { left: 170 };
@@ -9,9 +10,10 @@ const rightStyle = { left: 170 };
 
 
 function TextUpdaterNode() {
+  const [updateNodes]= useUpdateNodesMutation();
   const onChange = useCallback((evt) => {
-    evt.target.value;
-  }, []);
+    updateNodes(evt.target.value);
+  }, [updateNodes]);
 
   return (
     <TextNode>
@@ -31,7 +33,7 @@ function TextUpdaterNode() {
       />
       <div>
         <TextUpdaterLabel htmlFor="text">Text:</TextUpdaterLabel>
-        <input id="text" name="text" onChange={onChange}  />
+        <input id="text" name="text" onBlur={onChange}  />
       </div>
       <Handle
         type="source"

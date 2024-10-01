@@ -13,7 +13,7 @@ export const nodesApi = createApi({
         query: () => `/edges`,
       }),
 
-      saveNode: builder.mutation({
+      saveNodes: builder.mutation({
         query: (nodes) => ({
           url: `/nodes`,
           method: 'POST',
@@ -27,11 +27,11 @@ export const nodesApi = createApi({
           body: edge,
         }),
       }),
-      updateNode: builder.mutation({
-      query:(id, position, data )=>({
+      updateNodes: builder.mutation({
+      query:({id, ...patch})=>({
       url:`/nodes/${id}`,
       method: 'PATCH',
-      body: { position, data}
+      body: patch,
       })  
       }),
       updateEdge: builder.mutation({
@@ -60,9 +60,9 @@ export const nodesApi = createApi({
   export const {
      useFetchNodesQuery,
      useFetchEdgesQuery,
-     useSaveNodeMutation,
+     useSaveNodesMutation,
      useSaveEdgeMutation,
-     useUpdateNodeMutation,
+     useUpdateNodesMutation,
      useUpdateEdgeMutation,
      useDeleteNodeMutation,
      useDeleteEdgeMutation

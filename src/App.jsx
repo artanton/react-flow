@@ -21,13 +21,14 @@ import TextUpdaterNode from "./textUpdater";
 import {
   useFetchNodesQuery,
   useFetchEdgesQuery,
-  // useSaveNodeMutation,
-  useSaveEdgeMutation,
-  useUpdateNodeMutation,
-  useUpdateEdgeMutation,
+  // useSaveNodesMutation,
+  // useSaveEdgeMutation,
+  useUpdateNodesMutation,
+  // useUpdateEdgeMutation,
   // useDeleteNodeMutation,
   // useDeleteEdgeMutation,
 } from "./nodesAPI";
+// import { debounce } from "lodash";
 
 // import {CustomNode} from './assets/componetns/customNode'
 const nodeTypes = {
@@ -38,50 +39,59 @@ const nodeTypes = {
 function Flow() {
   const { data: nds } = useFetchNodesQuery();
   const { data: eds } = useFetchEdgesQuery();
-  // const [saveNode] = useSaveNodeMutation();
-  const [saveEdge] = useSaveEdgeMutation();
- const [updateNode]= useUpdateNodeMutation();
- const [updateEdge] =useUpdateEdgeMutation ();
+  // const [saveNodes] = useSaveNodesMutation();
+//   const [saveEdge] = useSaveEdgeMutation();
+ const [updateNodes]= useUpdateNodesMutation();
+//  const [updateEdge] =useUpdateEdgeMutation ();
   // const [deleteNode] = useDeleteNodeMutation();
   // const [deleteEdge] = useDeleteEdgeMutation();
 
   const [nodes, setNodes] = useState(nds);
   const [edges, setEdges] = useState(eds);
 
+
   useEffect(() => {
     if (nds) setNodes(nds);
     if (eds) setEdges(eds);
   }, [nds, eds]);
 
+  // const updateNodeDebounced = 
+  //   debounce(async (updatedNodes) => {
+  //     await updateNode(updatedNodes);
+  //   }, 1000
+  // );
+
 
 
   const onNodesChange = useCallback(
-    async (changes) => {
-      const updatedNodes = applyNodeChanges(changes, nodes);
-
-      setNodes(updatedNodes);
-      // await updateNode(updatedNodes);
-      for (const node of updatedNodes) {
-        await updateNode({ id: node.id, position: node.position, data: node.data });
-    }},
-    [nodes, updateNode]
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes],
   );
   const onEdgesChange = useCallback(
-    async (changes) => {
-      const updatedEdges = applyEdgeChanges(changes, edges);
-      setEdges(updatedEdges);
-      await updateEdge(updatedEdges);
-    },
-    [edges, updateEdge]
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [setEdges],
   );
   const onConnect = useCallback(
-    async (connection) => {
-      const newEdges = addEdge(connection, edges);
-      setEdges(newEdges);
-      await saveEdge(newEdges);
-    },
-    [saveEdge, edges]
+    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges],
   );
+
+ 
+  console.log("nds:",nds);
+  console.log("nodse:", nodes);
+  console.log("eds:", eds);
+  // updateNode({ id: node.id, position: node.position, data: node.data })
+
+  const onSubmit = async(e)=>{  
+    
+    e.preventDefault()
+    try {
+     nodes.forEach((node)=>  updateNodes({ id: node.id, patch:{position: node.position, data: node.data} }))
+      
+    } catch (error) {
+      console.log(error.messege);
+    }
+  }
 
   // const handleAddNodes = () => {
   //   const newNode = {
@@ -94,7 +104,7 @@ function Flow() {
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <button>Add node</button>
+      <button onClick={onSubmit} >Save</button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
