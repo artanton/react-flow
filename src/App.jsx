@@ -4,7 +4,7 @@ import {
     useState } from "react";
 import {
   ReactFlow,
-  // addEdge,
+  addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   Controls,
@@ -22,7 +22,7 @@ import {
   useFetchNodesQuery,
   useFetchEdgesQuery,
   // useSaveNodeMutation,
-  // useSaveEdgeMutation,
+  useSaveEdgeMutation,
   useUpdateNodeMutation,
   useUpdateEdgeMutation,
   // useDeleteNodeMutation,
@@ -39,7 +39,7 @@ function Flow() {
   const { data: nds } = useFetchNodesQuery();
   const { data: eds } = useFetchEdgesQuery();
   // const [saveNode] = useSaveNodeMutation();
-  // const [saveEdge] = useSaveEdgeMutation();
+  const [saveEdge] = useSaveEdgeMutation();
  const [updateNode]= useUpdateNodeMutation();
  const [updateEdge] =useUpdateEdgeMutation ();
   // const [deleteNode] = useDeleteNodeMutation();
@@ -74,14 +74,14 @@ function Flow() {
     },
     [edges, updateEdge]
   );
-  // const onConnect = useCallback(
-  //   async (connection) => {
-  //     const newEdges = addEdge(connection, edges);
-  //     setEdges(newEdges);
-  //     await saveEdge(newEdges);
-  //   },
-  //   [saveEdge, edges]
-  // );
+  const onConnect = useCallback(
+    async (connection) => {
+      const newEdges = addEdge(connection, edges);
+      setEdges(newEdges);
+      await saveEdge(newEdges);
+    },
+    [saveEdge, edges]
+  );
 
   // const handleAddNodes = () => {
   //   const newNode = {
@@ -100,7 +100,7 @@ function Flow() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        // onConnect={onConnect}
+        onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
       />
