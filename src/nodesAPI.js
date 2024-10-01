@@ -12,6 +12,7 @@ export const nodesApi = createApi({
       fetchEdges: builder.query({
         query: () => `/edges`,
       }),
+
       saveNode: builder.mutation({
         query: (nodes) => ({
           url: `/nodes`,
@@ -26,6 +27,20 @@ export const nodesApi = createApi({
           body: edge,
         }),
       }),
+      updateNode: builder.mutation({
+      query:(id, position, data )=>({
+      url:`/nodes/${id}`,
+      method: 'PATCH',
+      body: { position, data}
+      })  
+      }),
+      updateEdge: builder.mutation({
+        query:(id, animated, label )=>({
+        url:`/nodes/${id}`,
+        method: 'PATCH',
+        body: {animated, label}
+        })  
+        }),
       deleteNode: builder.mutation({
         query: (nodeId) => ({
           url: `/nodes/${nodeId}`,
@@ -47,6 +62,8 @@ export const nodesApi = createApi({
      useFetchEdgesQuery,
      useSaveNodeMutation,
      useSaveEdgeMutation,
+     useUpdateNodeMutation,
+     useUpdateEdgeMutation,
      useDeleteNodeMutation,
      useDeleteEdgeMutation
 

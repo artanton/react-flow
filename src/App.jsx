@@ -1,7 +1,10 @@
-import { useCallback, useState} from "react";
+import {
+   useCallback,
+  useEffect,
+    useState } from "react";
 import {
   ReactFlow,
-  addEdge,
+  // addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   Controls,
@@ -14,13 +17,14 @@ import "@xyflow/react/dist/style.css";
 // import initialEdges from "./edges.json";
 
 import OutputNode from "./nodeOutput";
-
 import TextUpdaterNode from "./textUpdater";
 import {
   useFetchNodesQuery,
   useFetchEdgesQuery,
-  useSaveNodeMutation,
-  useSaveEdgeMutation,
+  // useSaveNodeMutation,
+  // useSaveEdgeMutation,
+  useUpdateNodeMutation,
+  useUpdateEdgeMutation,
   // useDeleteNodeMutation,
   // useDeleteEdgeMutation,
 } from "./nodesAPI";
@@ -32,43 +36,52 @@ const nodeTypes = {
 };
 
 function Flow() {
-  const { data: nds} = useFetchNodesQuery();
-  const { data: eds} = useFetchEdgesQuery();
-  const [saveNode] = useSaveNodeMutation();
-  const [saveEdge] = useSaveEdgeMutation();
+  const { data: nds } = useFetchNodesQuery();
+  const { data: eds } = useFetchEdgesQuery();
+  // const [saveNode] = useSaveNodeMutation();
+  // const [saveEdge] = useSaveEdgeMutation();
+ const [updateNode]= useUpdateNodeMutation();
+ const [updateEdge] =useUpdateEdgeMutation ();
   // const [deleteNode] = useDeleteNodeMutation();
   // const [deleteEdge] = useDeleteEdgeMutation();
 
   const [nodes, setNodes] = useState(nds);
   const [edges, setEdges] = useState(eds);
-  
+
+  useEffect(() => {
+    if (nds) setNodes(nds);
+    if (eds) setEdges(eds);
+  }, [nds, eds]);
+
+
 
   const onNodesChange = useCallback(
-   async (changes) => {
+    async (changes) => {
       const updatedNodes = applyNodeChanges(changes, nodes);
-     
-        setNodes(updatedNodes);  
-        await saveNode(updatedNodes);
-    },
-    [nodes, saveNode]
+
+      setNodes(updatedNodes);
+      // await updateNode(updatedNodes);
+      for (const node of updatedNodes) {
+        await updateNode({ id: node.id, position: node.position, data: node.data });
+    }},
+    [nodes, updateNode]
   );
   const onEdgesChange = useCallback(
     async (changes) => {
       const updatedEdges = applyEdgeChanges(changes, edges);
-      
-        setEdges(updatedEdges);
-      await saveEdge(updatedEdges);
+      setEdges(updatedEdges);
+      await updateEdge(updatedEdges);
     },
-    [edges, saveEdge]
+    [edges, updateEdge]
   );
-  const onConnect = useCallback(
-    async (connection) => {
-      const  newEdges = addEdge(connection, edges);
-      setEdges(newEdges);
-      saveEdge(newEdges);
-    },
-    [saveEdge, edges]
-  );
+  // const onConnect = useCallback(
+  //   async (connection) => {
+  //     const newEdges = addEdge(connection, edges);
+  //     setEdges(newEdges);
+  //     await saveEdge(newEdges);
+  //   },
+  //   [saveEdge, edges]
+  // );
 
   // const handleAddNodes = () => {
   //   const newNode = {
@@ -81,13 +94,13 @@ function Flow() {
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <button>Add node</button>
+      {/* <button>Add node</button> */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        // onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
       />
@@ -99,3 +112,5 @@ function Flow() {
 }
 
 export default Flow;
+
+
