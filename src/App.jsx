@@ -106,7 +106,7 @@ function Flow() {
       />
       <Controls />
       {/* <CustomNode/> */}
-      <Background variant="lines" color="yellow" gap={50} size={1} />
+      <Background variant="dots" color="yellow" gap={10} size={1} />
     </div>
   );
 }
