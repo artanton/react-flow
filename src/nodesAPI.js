@@ -30,7 +30,7 @@ export const nodesApi = createApi({
       updateNodes: builder.mutation({
       query:({id, ...patch})=>({
       url:`/nodes/${id}`,
-      method: 'PATCH',
+      method: 'PUT',
       body: patch,
       })  
       }),

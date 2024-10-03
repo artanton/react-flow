@@ -1,7 +1,4 @@
-import {
-   useCallback,
-  useEffect,
-    useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ReactFlow,
   addEdge,
@@ -21,13 +18,14 @@ import TextUpdaterNode from "./textUpdater";
 import {
   useFetchNodesQuery,
   useFetchEdgesQuery,
-  // useSaveNodesMutation,
-  // useSaveEdgeMutation,
+  useSaveNodesMutation,
+  useSaveEdgeMutation,
   useUpdateNodesMutation,
   // useUpdateEdgeMutation,
-  // useDeleteNodeMutation,
-  // useDeleteEdgeMutation,
+  useDeleteNodeMutation,
+  useDeleteEdgeMutation,
 } from "./nodesAPI";
+import Notiflix from "notiflix";
 // import { debounce } from "lodash";
 
 // import {CustomNode} from './assets/componetns/customNode'
@@ -37,77 +35,129 @@ const nodeTypes = {
 };
 
 function Flow() {
-  const { data: nds } = useFetchNodesQuery();
-  const { data: eds } = useFetchEdgesQuery();
-  // const [saveNodes] = useSaveNodesMutation();
-//   const [saveEdge] = useSaveEdgeMutation();
- const [updateNodes]= useUpdateNodesMutation();
-//  const [updateEdge] =useUpdateEdgeMutation ();
-  // const [deleteNode] = useDeleteNodeMutation();
-  // const [deleteEdge] = useDeleteEdgeMutation();
+  const { data: nds, refetch: refetchNodes } = useFetchNodesQuery();
+  const { data: eds, refetch: refetchEdges } = useFetchEdgesQuery();
+  const [saveNodes] = useSaveNodesMutation();
+  const [saveEdge] = useSaveEdgeMutation();
+  const [updateNodes] = useUpdateNodesMutation();
+  //  const [updateEdge] =useUpdateEdgeMutation ();
+  const [deleteNode] = useDeleteNodeMutation();
+  const [deleteEdge] = useDeleteEdgeMutation();
 
   const [nodes, setNodes] = useState(nds);
   const [edges, setEdges] = useState(eds);
-
 
   useEffect(() => {
     if (nds) setNodes(nds);
     if (eds) setEdges(eds);
   }, [nds, eds]);
 
-  // const updateNodeDebounced = 
-  //   debounce(async (updatedNodes) => {
-  //     await updateNode(updatedNodes);
-  //   }, 1000
-  // );
-
-
-
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes],
+    [setNodes]
   );
   const onEdgesChange = useCallback(
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges],
+    [setEdges]
   );
   const onConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges],
+    [setEdges]
   );
 
- 
-  console.log("nds:",nds);
-  console.log("nodse:", nodes);
-  console.log("eds:", eds);
-  // updateNode({ id: node.id, position: node.position, data: node.data })
-
-  const onSubmit = async(e)=>{  
-    
-    e.preventDefault()
-    try {
-     nodes.forEach((node)=>  updateNodes({ id: node.id, patch:{position: node.position, data: node.data} }))
-      
-    } catch (error) {
-      console.log(error.messege);
+  const newNodePosition = () => {
+    if (!nodes[0]) {
+      return { x: 200, y: 200 };
     }
-  }
+    return {
+      x: `${nodes[0].position.x + 20 * nodes.length}`,
+      y: `${nodes[0].position.y}`,
+    };
+  };
 
-  // const handleAddNodes = () => {
-  //   const newNode = {
-  //     id: `${nodes.length + 1}`,
-  //     position: { x: Math.random() * 200, y: Math.random() * 200 },
-  //     data: { label: `Node ${nodes.length + 1}` },
-  //   };
-  //   setNodes((nds) => addNodes(newNode, nds));
-  // };
+  const handleAddNodes = async () => {
+    const newNode = {
+      id: `${nodes.length + 1}`,
+      position: newNodePosition(),
+      data: { label: `Node ${nodes.length + 1}` },
+      type: "textUpdater",
+      selected: false,
+      dragging: false,
+    };
+    // setNodes((nodes) => [...nodes, newNode]);
+    try {
+      await saveNodes(newNode);
+    } catch (error) {
+      Notiflix.Notify.failure(error.messege || "Something went wrong");
+    } finally {
+      refetchNodes();
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await Promise.all(
+        nds
+          .filter((nd) => !nodes.find((node) => node.id === nd.id))
+          .map((nd) => deleteNode(nd.id))
+      );
+
+      await Promise.all(
+        eds
+          .filter((ed) => !edges.find((edge) => edge.id === ed.id))
+          .map((ed) => deleteEdge(ed.id))
+      );
+
+      await Promise.all(
+        nodes.map(async (node) => {
+          const comparedNd = nds.find((nd) => nd.id === node.id);
+          if (
+            comparedNd.position !== node.position ||
+            comparedNd.data.label !== node.data.label
+          ) {
+            return updateNodes({
+              id: node.id,
+              position: node.position,
+              // data:{ lalel:node.data.label}
+            });
+          }
+        })
+      );
+
+      await Promise.all(
+        edges
+          .filter((edge) => !eds.find((ed) => ed.id === edge.id))
+          .map(async (edge) => {
+            const newEdge = {
+              label: `${edge.source}-${edge.target}`,
+              source: `${edge.source}`,
+              target: `${edge.target}`,
+              sourceHandle: `${edge.sourceHandle || undefined}`,
+              targetHandle: `${edge.targetHandle || undefined}`,
+              animated: false,
+              type: "step",
+            };
+            await saveEdge(newEdge);
+          })
+      );
+
+      refetchNodes();
+      refetchEdges();
+    } catch (error) {
+      Notiflix.Notify.failure(error.data.messege || "Something went wrong");
+    }
+  };
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <button onClick={onSubmit} >Save</button>
+      <button onClick={handleAddNodes}>Add Node</button>
+      <button onClick={onSubmit}>Save</button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        deleteKeyCode={["Delete"]}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -116,11 +166,9 @@ function Flow() {
       />
       <Controls />
       {/* <CustomNode/> */}
-      <Background variant="dots" color="yellow" gap={10} size={1} />
+      <Background variant="dots" color="black" gap={20} size={1} />
     </div>
   );
 }
 
 export default Flow;
-
-
