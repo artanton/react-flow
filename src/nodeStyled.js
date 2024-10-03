@@ -1,11 +1,12 @@
 import styled from "styled-components";
 
 export const TextNode = styled.div`
-position: relative;
+display:flex;
+align-items: center;
 
-  height: 50px;
-  border: 1px solid #eee;
-  padding: 5px;
+  min-height: 70px;
+  border: 1px solid #000;
+  padding: 30px 10px 5px 10px;
   border-radius: 5px;
   background: white;
 `;
