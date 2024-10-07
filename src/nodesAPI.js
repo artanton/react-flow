@@ -1,6 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
-const defaultURL = 'https://668c2ba00b61b8d23b0ca4de.mockapi.io/api';
+// const defaultURL = 'https://668c2ba00b61b8d23b0ca4de.mockapi.io/api';
+const defaultURL = 'http://localhost:4000/api';
+
 // Define a service using a base URL and expected endpoints
 export const nodesApi = createApi({
     reducerPath: 'nodesApi',
@@ -30,7 +32,7 @@ export const nodesApi = createApi({
       updateNodes: builder.mutation({
       query:({id, ...patch})=>({
       url:`/nodes/${id}`,
-      method: 'PUT',
+      method: 'PATCH',
       body: patch,
       })  
       }),

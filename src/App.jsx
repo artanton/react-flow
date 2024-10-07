@@ -26,6 +26,8 @@ import {
   useDeleteEdgeMutation,
 } from "./nodesAPI";
 import Notiflix from "notiflix";
+import { nanoid } from "@reduxjs/toolkit";
+import { EdgeLabel } from "./edgeLabel";
 // import { debounce } from "lodash";
 
 // import {CustomNode} from './assets/componetns/customNode'
@@ -70,14 +72,14 @@ function Flow() {
       return { x: 200, y: 200 };
     }
     return {
-      x: `${nodes[0].position.x + 20 * nodes.length}`,
-      y: `${nodes[0].position.y}`,
+      x: nodes[0].position.x + 20 * nodes.length,
+      y: nodes[0].position.y,
     };
   };
 
   const handleAddNodes = async () => {
     const newNode = {
-      id: `${nodes.length + 1}`,
+      id: nanoid(),
       position: newNodePosition(),
       data: { label: `Node ${nodes.length + 1}` },
       type: "textUpdater",
@@ -88,7 +90,7 @@ function Flow() {
     try {
       await saveNodes(newNode);
     } catch (error) {
-      Notiflix.Notify.failure(error.messege || "Something went wrong");
+      Notiflix.Notify.failure(error?.messege || "Something went wrong");
     } finally {
       refetchNodes();
     }
@@ -128,10 +130,14 @@ function Flow() {
 
       await Promise.all(
         edges
-          .filter((edge) => !eds.find((ed) => ed.id === edge.id))
+          .filter((edge) => 
+            
+            !eds.find((ed) => ed.id === edge.id))
           .map(async (edge) => {
-            const newEdge = {
-              label: `${edge.source}-${edge.target}`,
+           
+              const newEdge = {
+              id: nanoid(),
+              label: EdgeLabel(nodes, edge),
               source: `${edge.source}`,
               target: `${edge.target}`,
               sourceHandle: `${edge.sourceHandle || undefined}`,
@@ -140,14 +146,16 @@ function Flow() {
               type: "step",
             };
             await saveEdge(newEdge);
+           ;
           })
       );
 
-      refetchNodes();
-      refetchEdges();
+      
     } catch (error) {
       Notiflix.Notify.failure(error.data.messege || "Something went wrong");
-    }
+    }finally{
+      refetchNodes();
+      refetchEdges();}
   };
 
   return (
