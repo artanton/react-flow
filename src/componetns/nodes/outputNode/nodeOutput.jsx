@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 
-import { TextNode, TextUpdaterLabel,  } from './nodeStyled';
+import { TextNode, TextUpdaterLabel,  } from '../updaterNode/nodeStyled';
 
 const leftStyle = { left: 10 };
 const rightStyle = { left: 170 };

@@ -1,0 +1,1 @@
+export const  qustionMark="//default/question.png"

@@ -6,6 +6,7 @@ import {
   applyNodeChanges,
   Controls,
   Background,
+  // useOnSelectionChange,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
@@ -13,8 +14,8 @@ import "@xyflow/react/dist/style.css";
 // import initialNodes from "./nodes.json";
 // import initialEdges from "./edges.json";
 
-import OutputNode from "./nodeOutput";
-import TextUpdaterNode from "./textUpdater";
+import OutputNode from "./componetns/nodes/outputNode/nodeOutput";
+import TextUpdaterNode from "./componetns/nodes/updaterNode/textUpdater";
 import {
   useFetchNodesQuery,
   useFetchEdgesQuery,
@@ -25,12 +26,11 @@ import {
   useDeleteNodeMutation,
   useDeleteEdgeMutation,
 } from "./nodesAPI";
-import Notiflix from "notiflix";
+import  {Notify} from "notiflix";
 import { nanoid } from "@reduxjs/toolkit";
-import { EdgeLabel } from "./edgeLabel";
-// import { debounce } from "lodash";
+import { EdgeLabel } from "./componetns/edges/edgeLabel";
+import { Modal } from "./componetns/modal/modalWndow";
 
-// import {CustomNode} from './assets/componetns/customNode'
 const nodeTypes = {
   outPut: OutputNode,
   textUpdater: TextUpdaterNode,
@@ -48,6 +48,35 @@ function Flow() {
 
   const [nodes, setNodes] = useState(nds);
   const [edges, setEdges] = useState(eds);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedElement, setSelectedElement] = useState(null);
+
+  const onOpenModal = (element) => {
+    setSelectedElement(element);
+    setShowModal(true);
+  };
+  const onCloseModal = () => {
+    setSelectedElement(null);
+    setShowModal(false);
+    refetchNodes();
+   
+  };
+  const onNodeClick = (event, node) => {
+    onOpenModal(node); 
+  };
+  const onEdgeClick = (event, edge) => {
+    onOpenModal(edge); 
+  };
+
+  // useOnSelectionChange({
+  //   onChange: ({ nodes, edges }) => {
+  //     const selected = nodes[0] || edges[0]; // Grab first selected node/edge
+  //     if (selected) {
+  //       // setSelectedElement(selected);
+  //       onOpenModal()
+  //     }
+  //   },
+  // });
 
   useEffect(() => {
     if (nds) setNodes(nds);
@@ -87,18 +116,23 @@ function Flow() {
       dragging: false,
     };
     // setNodes((nodes) => [...nodes, newNode]);
-    try {
-      await saveNodes(newNode);
-    } catch (error) {
-      Notiflix.Notify.failure(error?.messege || "Something went wrong");
-    } finally {
-      refetchNodes();
-    }
+    await saveNodes(newNode)
+    .unwrap()
+    .then(()=>refetchNodes())
+    .catch((error)=>Notify.failure(error?.data?.message || "Something went wrong"))
+
+
+    // try {
+    //   await saveNodes(newNode);
+    // } catch (error) {
+    //   Notiflix.Notify.failure(error?.messege || "Something went wrong");
+    // } finally {
+    //   refetchNodes();
+    // }
   };
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async(e) => {
+    e.preventDefault()
     try {
       await Promise.all(
         nds
@@ -130,12 +164,9 @@ function Flow() {
 
       await Promise.all(
         edges
-          .filter((edge) => 
-            
-            !eds.find((ed) => ed.id === edge.id))
+          .filter((edge) => !eds.find((ed) => ed.id === edge.id))
           .map(async (edge) => {
-           
-              const newEdge = {
+            const newEdge = {
               id: nanoid(),
               label: EdgeLabel(nodes, edge),
               source: `${edge.source}`,
@@ -146,22 +177,36 @@ function Flow() {
               type: "step",
             };
             await saveEdge(newEdge);
-           ;
           })
       );
-
-      
     } catch (error) {
-      Notiflix.Notify.failure(error.data.messege || "Something went wrong");
-    }finally{
+      Notify.failure(error.data.message || "Something went wrong");
+    } finally {
       refetchNodes();
-      refetchEdges();}
+      refetchEdges();
+    }  
+        
   };
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
-      <button onClick={handleAddNodes}>Add Node</button>
-      <button onClick={onSubmit}>Save</button>
+    <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
+      <div
+        style={{
+          position: "absolute",
+          width: "20vw",
+          top: "2%",
+          left: "2%",
+          display: "flex",
+          justifyContent: "space-evenly"
+        }}
+      >
+        <button onClick={handleAddNodes} style={{ boxSizing: "border-box", zIndex: "150" }}>
+          Add Node
+        </button>
+        <button onClick={onSubmit} style={{ boxSizing: "border-box",  zIndex: "150" }}>
+          Save
+        </button>
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -170,11 +215,14 @@ function Flow() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         fitView
       />
       <Controls />
       {/* <CustomNode/> */}
       <Background variant="dots" color="black" gap={20} size={1} />
+      {showModal && <Modal onClose={onCloseModal} isOpen={showModal} element={selectedElement}/>}
     </div>
   );
 }
