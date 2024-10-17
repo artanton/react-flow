@@ -6,6 +6,7 @@ import {
   applyNodeChanges,
   Controls,
   Background,
+  MiniMap,
   // useOnSelectionChange,
 } from "@xyflow/react";
 
@@ -31,10 +32,17 @@ import { nanoid } from "@reduxjs/toolkit";
 import { EdgeLabel } from "./componetns/edges/edgeLabel";
 import { Modal } from "./componetns/modal/modalWndow";
 
+const edgeTypes = ['default', 'step', 'smoothstep', 'straight'];
+
 const nodeTypes = {
   outPut: OutputNode,
   textUpdater: TextUpdaterNode,
 };
+
+const nodeColors = [
+  ['#9e271e', '#d8b416', '#3c9e0f', '#2cc2ae'],
+  ['#2879e2', '#1a2cc9', '#7731c7', '#444546'],
+];
 
 function Flow() {
   const { data: nds, refetch: refetchNodes } = useFetchNodesQuery();
@@ -59,6 +67,7 @@ function Flow() {
     setSelectedElement(null);
     setShowModal(false);
     refetchNodes();
+    refetchEdges();
    
   };
   const onNodeClick = (event, node) => {
@@ -112,6 +121,7 @@ function Flow() {
       position: newNodePosition(),
       data: { label: `Node ${nodes.length + 1}` },
       type: "textUpdater",
+      nodeColor:"#444546",
       selected: false,
       dragging: false,
     };
@@ -215,10 +225,12 @@ function Flow() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes= {edgeTypes}      
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
         fitView
-      />
+        />
+        <MiniMap  nodeColor = {nodeColors} />
       <Controls />
       {/* <CustomNode/> */}
       <Background variant="dots" color="black" gap={20} size={1} />
