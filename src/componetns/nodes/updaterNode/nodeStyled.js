@@ -9,7 +9,7 @@ export const TextNode = styled.div`
   border: 1px solid #000;
   padding: 30px 10px 5px 10px;
   border-radius: 5px;
-  background: white;
+  background: nodeColo;
 `;
 
 export const TextUpdaterLabel = styled.label`

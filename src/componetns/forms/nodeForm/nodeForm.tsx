@@ -80,6 +80,7 @@ export const NodeForm = ({ el, onClose }) => {
   };
 
   const handleSubmit = async(values) => {
+    console.log(id);
     await updateNodes({
       id: id,
       position,
@@ -101,7 +102,7 @@ export const NodeForm = ({ el, onClose }) => {
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      <div>
+      <>
         <div
           style={{
             display: "flex",
@@ -144,16 +145,19 @@ export const NodeForm = ({ el, onClose }) => {
           </label>
           Node Type
           <div>
+          <label>
             <Field type="radio" name="type" id="type" value="textUpdater" />
-            <label>Updater</label>
-          </div>
-          <div>
+           Updater
+           </label>
+
+           <label>
             <Field type="radio" name="type" id="type" value="outPut" />
-            <label>Output</label>
+            Output
+            </label>
           </div> 
           <button type="submit"> Update </button>
         </FormContainer>
-      </div>
+      </>
     </Formik>
   );
 };

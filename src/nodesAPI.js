@@ -37,10 +37,10 @@ export const nodesApi = createApi({
       }),
     }),
     updateEdge: builder.mutation({
-      query: (id, animated, label) => ({
-        url: `/nodes/${id}`,
+      query: ({ id, ...patch }) => ({
+        url: `/edges/${id}`,
         method: "PATCH",
-        body: { animated, label },
+        body: patch,
       }),
     }),
     deleteNode: builder.mutation({
