@@ -6,7 +6,7 @@ import {
   applyNodeChanges,
   Controls,
   Background,
-  MiniMap,
+
   // useOnSelectionChange,
 } from "@xyflow/react";
 
@@ -39,10 +39,7 @@ const nodeTypes = {
   textUpdater: TextUpdaterNode,
 };
 
-const nodeColors = [
-  ['#9e271e', '#d8b416', '#3c9e0f', '#2cc2ae'],
-  ['#2879e2', '#1a2cc9', '#7731c7', '#444546'],
-];
+
 
 function Flow() {
   const { data: nds, refetch: refetchNodes } = useFetchNodesQuery();
@@ -230,7 +227,7 @@ function Flow() {
         onEdgeClick={onEdgeClick}
         fitView
         />
-        <MiniMap  nodeColor = {nodeColors} />
+       
       <Controls />
       {/* <CustomNode/> */}
       <Background variant="dots" color="black" gap={20} size={1} />
